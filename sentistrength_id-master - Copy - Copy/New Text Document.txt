@@ -1,0 +1,5 @@
+#credentials
+access_token = '1151196229683929088-86wOu9aaxdYWgNvalp2pkNqucaXp5d'
+access_token_secret ='NUfnsWNcgfbCPHotYT4LS6fXXfrRgHCQfALFsCi5NrjyH'
+consumer_key = 'CN9YzSn3CqC9KT9bcByUCv8Kp'
+consumer_secret = '0iiSCqbKO6IDCP5uG2qfreTZcuxICeLcIU1zwD6KwpOWItt02R'

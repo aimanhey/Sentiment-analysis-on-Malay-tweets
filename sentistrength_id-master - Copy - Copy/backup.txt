@@ -1,0 +1,265 @@
+
+import json
+import sys
+import re
+import nltk
+import emoji
+from collections import OrderedDict
+import sentistrength_id as fl
+
+
+
+
+
+def okay(positiveList, negativeList):
+    config = json.loads(open('C:\\Users\\Acer E Series\\AppData\\Local\\Programs\\Python\\Python37-32\\tweetsh.json','r').read())
+    print(len(config))
+    non_bmp_map = dict.fromkeys(range(0x10000, sys.maxunicode + 1), 0xfffd)
+    ham=[]
+    kuyms=[]
+    for gur in range(len(config)) :
+        kuy1=[]
+        if config[gur]["lang"]!="ko" and config[gur]["lang"]!="ja" :
+            kuys=(config[gur]["full_text"].encode('utf-16', 'surrogatepass').decode("utf-16"))
+            try:
+            
+                 if "RT " in kuys:
+                     print(int(gur))
+                     kuy=(config[gur]["retweeted_status"]["full_text"].encode('utf-16', 'surrogatepass').decode("utf-16"))
+            except:
+                    print(int(gur))
+                    kuy=(config[gur]["full_text"].encode('utf-16', 'surrogatepass').decode("utf-16"))
+                 
+                 # kuy=config[gur][gelem].translate(non_bmp_map).encode('utf-16', 'surrogatepass').decode("utf-16")
+        
+            samantaro=emoji.demojize(kuy)
+            kuyms.append(samantaro)
+            kuym=re.sub('salah satu','',samantaro)
+            link_removed = re.sub('https?://[A-Za-z0-9./]+','',kuym)
+            lower_case_tweet= link_removed.lower()
+            print(lower_case_tweet)
+            tokens=nltk.tokenize.word_tokenize(lower_case_tweet)
+            """tokens=[]
+            for word in tokensx:
+                try:
+                    corrector=malaya.spell.probability()
+                    wordd=corrector.correct(str(word),fast= True)
+                    tokens.append(wordd)
+                except:
+                    tokens.append(word)
+                    """
+            #print(" ".join(tokens))  
+            tokenss=[]   
+            for word in tokens:
+                matches=re.match(r'^(.*)(ku|mu|nyakah|tah|pun|2)$', word)
+                #print(matches)
+                if matches:
+                    matchess=re.sub('(ku|mu|nya|kah|tah|pun|2)$',"",word)
+                    tokenss.append(str(matchess))
+                else:
+                    tokenss.append(word)
+            tokenssd=[]    
+            for tot in tokenss:
+                et=wani(tot)
+                tokenssd.append(et)
+            tokenss=" ".join(tokenssd)
+            if  "biasa biasa" in tokenss:
+                tokenss=re.sub(r'biasa biasa',r'biasa_biasa', tokenss)
+            else:
+                tokenss=tokenss
+            if any(value in tokenss for value in ["tak", "tidak", "bukan"]):
+                tokens=tokenss
+            else:
+                tokens=tokenss
+           
+                
+            #print(tokens)
+            ham.append("".join(tokens))
+            positiveWords=0
+            negativeWords=0
+            #print(tokenss)
+            tokenssx=nltk.tokenize.word_tokenize(tokenss)
+            #print("lko")
+           # print(tokenssx)
+            for word in tokenssx:
+                if positiveList.count(word)==1:
+                    positiveWords+=1
+                    #print(word)
+                if negativeList.count(word)==1: # if the word is a negative one
+                    negativeWords+=1
+                    #print(word)
+           # print(positiveWords)
+            #print(negativeWords)
+            print(" ------------------------------------------------- ")
+        else:
+            print("")
+    
+        
+       
+    return ham,kuyms
+
+
+
+def read(get,kuy):
+    line=set()
+    lines=set()
+    gets=[]
+    kuys=[]
+    for sap in get:
+        if sap not in line:
+            gets.append(sap)
+            line.add(sap)
+    for sap in kuy:
+        if sap not in lines:
+            kuys.append(sap)
+            lines.add(sap)
+    """        
+    for  saps in kuys:
+        print(str(saps))
+        print("sfdgvhbjnkmlxdfcvgbhjnkmsdfvgnj")
+        """
+    print(kuys)
+    for sap in gets:
+        print("hjagchjzgmfgjmhaghjhfd")
+        print(sap)
+        fl.senti.main(str(sap))
+        
+      
+       
+       
+     
+
+def getLexicons(positiveList, negativeList):
+	## Open positive lexicon 
+	positiveLex = open('C:\\Users\\Acer E Series\\Documents\\GitHub\\ID-OpinionWords\\positive.txt', encoding="utf-8")
+	for words in positiveLex:
+		words=words.rstrip("\n") # to eliminate the line break
+		positiveList.append(words) # add the word to the list
+
+	## Negative lexicon 
+	negativeLex = open('C:\\Users\\Acer E Series\\Documents\\GitHub\\ID-OpinionWords\\negative.txt',  encoding="utf-8")
+	for words in negativeLex:
+		words=words.rstrip("\n") # to eliminate the line break
+		negativeList.append(words) # add the word to the list
+
+	## Negative lexicon 
+	
+
+            ## close the files
+	positiveLex.close()
+	negativeLex.close()
+	
+	
+
+	return positiveList, negativeList
+    
+def negate_sequence(text):
+    negation = False
+    result = []
+    delims = "?.,!:;"
+    words = text.split()
+    prev = None
+    pprev = None
+    for word in words:
+        stripped = word.strip(delims)
+        negated = "tak_" + stripped if negation else stripped
+        result.append(negated)
+        if prev:
+            bigram = prev + " " + negated
+            result.append(bigram)
+            if pprev:
+                trigram = pprev + " " + bigram
+                result.append(trigram)
+            pprev = prev
+        prev = negated
+
+        if any(neg in word for neg in ["tak", "tidak", "bukan"]):
+            negation = not negation
+
+        if any(c in word for c in delims):
+            negation = False
+
+    return result
+
+def is_plural(text):
+    negation = False
+    result = []
+    delims = "?.,!:;"
+    words = text.split()
+    prev = None
+    pprev = None
+    for word in words:
+        stripped = word.strip(delims)
+        negated = " kupasan_" + stripped if negation else stripped
+        result.append(negated)
+        if prev:
+            bigram = prev + " " + negated
+            result.append(bigram)
+            if pprev:
+                trigram = pprev + " " + bigram
+                result.append(trigram)
+            pprev = prev
+        prev = negated
+
+        if any(neg in word for neg in ["semakin"]):
+            negation = not negation
+
+        if any(c in word for c in delims):
+            negation = False
+
+    return result
+
+
+def wani(term):
+    sentiwords_txt = [line.replace('\n','').split(":") for line in open("tidak.txt").read().splitlines()]
+    sentiwords_dict = OrderedDict()
+    if term=="x":
+        for term in sentiwords_txt:
+            sentiwords_dict[term[0]] = str(term[1])
+        return sentiwords_dict[term[0]]
+    else:
+        return term
+
+positiveList=[]
+negativeList=[]
+getLexicons(positiveList, negativeList)
+ham,kuym=okay(positiveList, negativeList)
+read(ham,kuym)
+
+
+
+
+
+
+#range(len(config))
+   #config = (config.decode("raw_unicode_escape").encode('utf-16', 'surrogatepass').decode('utf-16'))
+#print(config)
+#print(config[0]["full_text"])
+   #if(config[gur]["retweeted_status"]["full_text"]):
+     #   kuy=config[gur]["retweeted_status"]["full_text"].translate(non_bmp_map)
+    #else:
+
+
+  # kuy=config[gur][gelem].translate(non_bmp_map).encode('utf-16', 'surrogatepass').decode("utf-16")
+#.translate(non_bmp_map)
+
+ #user_removed = re.sub(r'@[A-Za-z0-9]+','',kuy)
+
+
+
+   #print(kuy + " \n")
+    #r1=re.match("RT",kuy)
+    #print(r1)
+
+    #if(kuy.find("RT")==-1):
+     #   print("hello")
+    #else:
+      #  print("hi")
+
+#
+    
+#with open('C:\\Users\\Acer E Series\\AppData\\Local\\Programs\\Python\\Python37-32\\tweetsh.json', 'r') as j:
+#    json_data = json.loads(j)
+ #   print((json_data.['full_text']))
+     
+
