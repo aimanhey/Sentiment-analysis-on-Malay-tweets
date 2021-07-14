@@ -12,3 +12,11 @@ This system equiped with various technologies predominantly:
 - Emoji library
 - webBrowser
 - urlLib
+
+This system is using SentiStrength algorithm to analyse tweets with help of lexicon:
+-Positive/Negative lexicon (with translated emoji)
+-Booster words lexicon (sangat, sungguh, amat, etc)
+-Question words lexicon
+-Negating lexicon
+-Idiom lexicon
+-Emoticon lexicon
